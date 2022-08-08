@@ -38,8 +38,10 @@ My = exceptions.My()
 
 
 def send_message(bot, message):
-    """Отправляет сообщние в Telegram чат,
-    определяемый переменной окружения TELEGRAM_CHAT_ID."""
+    """
+    Отправляет сообщние в Telegram чат,
+    определяемый переменной окружения TELEGRAM_CHAT_ID.
+    """
     try:
         sent_message = bot.send_message(TELEGRAM_CHAT_ID, message)
     except Exception as error:
