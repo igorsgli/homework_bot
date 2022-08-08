@@ -38,8 +38,7 @@ My = exceptions.My()
 
 
 def send_message(bot, message):
-    """Отправляет сообщние в Telegram чат, определяемый
-    переменной окружения TELEGRAM_CHAT_ID."""
+    """Отправляет сообщние в Telegram чат, определяемый переменной окружения TELEGRAM_CHAT_ID."""
     try:
         sent_message = bot.send_message(TELEGRAM_CHAT_ID, message)
     except Exception as error:
@@ -102,9 +101,9 @@ def check_tokens():
     которые необходимы для работы бота.
     """
     if (
-        PRACTICUM_TOKEN != None
-        and TELEGRAM_TOKEN != None
-        and TELEGRAM_CHAT_ID != None
+        PRACTICUM_TOKEN is not None
+        and TELEGRAM_TOKEN is not None
+        and TELEGRAM_CHAT_ID is not None
     ):
         return True
     else:
@@ -113,16 +112,16 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-
     if not check_tokens():
         for token, name in (
             (PRACTICUM_TOKEN, 'PRACTICUM_TOKEN'),
             (TELEGRAM_TOKEN, 'TELEGRAM_TOKEN'),
             (TELEGRAM_CHAT_ID, 'TELEGRAM_CHAT_ID'),
         ):
-            if token == None:
+            if token is None:
                 logger.critical(
-                    f'Отсутствует обязательная переменная окружения: "{name}". '
+                    f'Отсутствует обязательная переменная '
+                    f'окружения: "{name}". '
                     f'Программа принудительно остановлена.'
                 )
         raise My.NoTokenException(
@@ -143,12 +142,11 @@ def main():
             response = get_api_answer(current_timestamp)
 
         except My.HTTPstatusNot200 as error:
-            HTTP_error = f'Сбой в програме'
+            HTTP_error = f'Сбой в програме: ответ API: "{error}".'
             logger.error(HTTP_error)
             if HTTP_error != HTTP_error_previous:
-                send_message(bot, endpoint_message)
+                send_message(bot, HTTP_error)
                 HTTP_error_previous = HTTP_error
-            
             time.sleep(RETRY_TIME)
 
         except Exception as error:
@@ -160,7 +158,6 @@ def main():
             if endpoint_message != endpoint_message_previous:
                 send_message(bot, endpoint_message)
                 endpoint_message_previous = endpoint_message
-            
             time.sleep(RETRY_TIME)
 
         else:
@@ -173,7 +170,6 @@ def main():
                 if error_not_list != error_not_list_previous:
                     send_message(bot, error_not_list)
                     error_not_list_previous = error_not_list
-
                     time.sleep(RETRY_TIME)
 
             except My.NoKeysException as error:
