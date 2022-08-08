@@ -38,7 +38,7 @@ My = exceptions.My()
 
 
 def send_message(bot, message):
-    """Отправляет сообщние в Telegram чат, определяемый переменной окружения TELEGRAM_CHAT_ID."""
+    """Отправляет сообщние в Telegram чат."""
     try:
         sent_message = bot.send_message(TELEGRAM_CHAT_ID, message)
     except Exception as error:
@@ -58,9 +58,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    """Делает запрос к единственному
-    эндпоинту API-сервиса.
-    """
+    """Делает запрос к единственному эндпоинту API-сервиса."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
 
@@ -87,9 +85,7 @@ def check_response(response):
 
 
 def parse_status(homework):
-    """Извлекает из информации о конкретной
-    домашней работе статус этой работы.
-    """
+    """Извлекает статус домашней работы."""
     homework_name = homework['homework_name']
     homework_status = homework['status']
     verdict = HOMEWORK_STATUSES[homework_status]
@@ -97,9 +93,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """Проверяет доступность переменных окружения,
-    которые необходимы для работы бота.
-    """
+    """Проверяет доступность переменных окружения."""
     if (
         PRACTICUM_TOKEN is not None
         and TELEGRAM_TOKEN is not None
