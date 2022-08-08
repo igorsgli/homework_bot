@@ -101,12 +101,6 @@ def check_tokens():
     ):
         return True
     else:
-        return False
-
-
-def main():
-    """Основная логика работы бота."""
-    if not check_tokens():
         for token, name in (
             (PRACTICUM_TOKEN, 'PRACTICUM_TOKEN'),
             (TELEGRAM_TOKEN, 'TELEGRAM_TOKEN'),
@@ -118,6 +112,12 @@ def main():
                     f'окружения: "{name}". '
                     f'Программа принудительно остановлена.'
                 )
+        return False
+
+
+def main():
+    """Основная логика работы бота."""
+    if not check_tokens():
         raise My.NoTokenException(
             'Отсутствуют обязательные переменные окружения'
         )
