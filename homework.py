@@ -1,4 +1,10 @@
-import exceptions, logging, os, requests, sys, telegram, time
+import exceptions
+import logging
+import os
+import requests
+import sys
+import telegram
+import time
 
 from dotenv import load_dotenv
 
@@ -30,10 +36,10 @@ HOMEWORK_STATUSES = {
 
 My = exceptions.My()
 
+
 def send_message(bot, message):
     """Отправляет сообщние в Telegram чат,
-    определяемый переменной окружения TELEGRAM_CHAT_ID.
-    """
+    определяемый переменной окружения TELEGRAM_CHAT_ID."""
     try:
         sent_message = bot.send_message(TELEGRAM_CHAT_ID, message)
     except Exception as error:
@@ -118,7 +124,7 @@ def main():
         )
 
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
-    current_timestamp = 1 #int(time.time())
+    current_timestamp = int(time.time())
     status_verdict_previous = ''
     HTTP_error_previous = ''
     endpoint_message_previous = ''
@@ -127,7 +133,6 @@ def main():
     error_status_previous = ''
 
     while True:
-    # for i in range(3):
         try:
             response = get_api_answer(current_timestamp)
 
