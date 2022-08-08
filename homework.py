@@ -38,10 +38,8 @@ My = exceptions.My()
 
 
 def send_message(bot, message):
-    """
-    Отправляет сообщние в Telegram чат,
-    определяемый переменной окружения TELEGRAM_CHAT_ID.
-    """
+    """Отправляет сообщние в Telegram чат, определяемый
+    переменной окружения TELEGRAM_CHAT_ID.""
     try:
         sent_message = bot.send_message(TELEGRAM_CHAT_ID, message)
     except Exception as error:
@@ -66,7 +64,7 @@ def get_api_answer(current_timestamp):
     """
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
-    
+
     homework_statuses = requests.get(ENDPOINT, headers=HEADERS, params=params)
     if homework_statuses.status_code != 200:
         raise My.HTTPstatusNot200('API возвращает код, отличный от 200')
@@ -82,7 +80,9 @@ def check_response(response):
         if isinstance(homeworks, list):
             return homeworks
         else:
-            raise My.HomeworksIsNotList('Возвращается не список домашних работ.')
+            raise My.HomeworksIsNotList(
+                'Возвращается не список домашних работ.'
+            )
     else:
         raise My.NoKeysException('Отсутствуют ожидаемые ключи в ответе API.')
 
@@ -101,7 +101,11 @@ def check_tokens():
     """Проверяет доступность переменных окружения,
     которые необходимы для работы бота.
     """
-    if (PRACTICUM_TOKEN!=None and TELEGRAM_TOKEN!=None and TELEGRAM_CHAT_ID!=None):
+    if (
+        PRACTICUM_TOKEN != None
+        and TELEGRAM_TOKEN != None
+        and TELEGRAM_CHAT_ID != None
+    ):
         return True
     else:
         return False
