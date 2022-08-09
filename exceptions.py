@@ -26,3 +26,8 @@ class My(object):
         """
 
         pass
+
+    class NoStatusException(Exception):
+        """Статус домашней работы не задокументирован."""
+
+        pass

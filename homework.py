@@ -5,7 +5,7 @@ import requests
 import sys
 import telegram
 import time
-
+      
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -88,8 +88,15 @@ def parse_status(homework):
     """Извлекает статус домашней работы."""
     homework_name = homework['homework_name']
     homework_status = homework['status']
-    verdict = HOMEWORK_STATUSES[homework_status]
-    return f'Изменился статус проверки работы "{homework_name}". {verdict}'
+    if homework_status in dict.keys(HOMEWORK_STATUSES):
+        verdict = HOMEWORK_STATUSES[homework_status]
+        return (f'Изменился статус проверки '
+            f'работы "{homework_name}". {verdict}'
+        )
+    else:
+        raise My.NoStatusException(
+            'Статус домашней работы не задокументирован.'
+        )
 
 
 def check_tokens():
@@ -134,6 +141,21 @@ def main():
     while True:
         try:
             response = get_api_answer(current_timestamp)
+            homeworks = check_response(response)
+
+            if homeworks == []:
+                status_verdict = 'Статус отсутствует.'
+            else:
+                status_verdict = parse_status(homeworks[0])
+
+            if status_verdict != status_verdict_previous:
+                send_message(bot, status_verdict)
+                status_verdict_previous = status_verdict
+            else:
+                logger.debug('В ответе отсутствуют новые статусы.')
+
+            time.sleep(RETRY_TIME)
+            current_timestamp = response['current_date']
 
         except My.HTTPstatusNot200 as error:
             HTTP_error = f'Сбой в програме: ответ API: "{error}".'
@@ -141,6 +163,32 @@ def main():
             if HTTP_error != HTTP_error_previous:
                 send_message(bot, HTTP_error)
                 HTTP_error_previous = HTTP_error
+            time.sleep(RETRY_TIME)
+
+        except My.HomeworksIsNotList as error:
+            error_not_list = f'Сбой в программе: "{error}"'
+            logger.error(error_not_list)
+            if error_not_list != error_not_list_previous:
+                send_message(bot, error_not_list)
+                error_not_list_previous = error_not_list
+                time.sleep(RETRY_TIME)
+
+        except My.NoKeysException as error:
+            error_no_keys = f'Сбой в программе: "{error}"'
+            logger.error(error_no_keys)
+            if error_no_keys != error_no_keys_previous:
+                send_message(bot, error_no_keys)
+                error_no_keys_previous = error_no_keys
+                time.sleep(RETRY_TIME)
+                
+        except My.NoStatusException as error:
+            error_status = (
+                f'Сбой в работе программы: "{error}"'
+                )
+            logger.error(error_status)
+            if error_status != error_status_previous:
+                send_message(bot, error_status)
+                error_status_previous = error_status
             time.sleep(RETRY_TIME)
 
         except Exception as error:
@@ -153,57 +201,6 @@ def main():
                 send_message(bot, endpoint_message)
                 endpoint_message_previous = endpoint_message
             time.sleep(RETRY_TIME)
-
-        else:
-            try:
-                homeworks = check_response(response)
-
-            except My.HomeworksIsNotList as error:
-                error_not_list = f'Сбой в программе: "{error}"'
-                logger.error(error_not_list)
-                if error_not_list != error_not_list_previous:
-                    send_message(bot, error_not_list)
-                    error_not_list_previous = error_not_list
-                    time.sleep(RETRY_TIME)
-
-            except My.NoKeysException as error:
-                error_no_keys = f'Сбой в программе: "{error}"'
-                logger.error(error_no_keys)
-                if error_no_keys != error_no_keys_previous:
-                    send_message(bot, error_no_keys)
-                    error_no_keys_previous = error_no_keys
-
-                    time.sleep(RETRY_TIME)
-
-            else:
-                if homeworks == []:
-                    status_verdict = 'Статус отсутствует.'
-                else:
-                    try:
-                        status_verdict = parse_status(homeworks[0])
-                        print(status_verdict)
-                    except Exception as error:
-                        error_status = (
-                            f'Сбой в работе программы: '
-                            f'Статус домашней работы незадокументирован. '
-                            f'Ответ API: {error}'
-                        )
-                        logger.error(error_status)
-                        if error_status != error_status_previous:
-                            send_message(bot, error_status)
-                            error_status_previous = error_status
-
-                        time.sleep(RETRY_TIME)
-
-                if status_verdict != status_verdict_previous:
-                    send_message(bot, status_verdict)
-                    status_verdict_previous = status_verdict
-                else:
-                    logger.debug('В ответе отсутствуют новые статусы.')
-
-                time.sleep(RETRY_TIME)
-                current_timestamp = response['current_date']
-
 
 if __name__ == '__main__':
     main()
