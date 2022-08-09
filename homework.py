@@ -5,7 +5,7 @@ import requests
 import sys
 import telegram
 import time
-      
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -142,6 +142,7 @@ def send_message_if_not_repeated(
         logger.debug(debug_info)
     return message
 
+
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
@@ -165,7 +166,7 @@ def main():
             status_verdict = get_status_verdict(homeworks)
 
             status_verdict_previous = send_message_if_not_repeated(
-                bot, 
+                bot,
                 status_verdict,
                 status_verdict_previous,
                 'В ответе отсутствуют новые статусы.'
@@ -177,7 +178,7 @@ def main():
             HTTP_error = f'Сбой в програме: ответ API: "{error}".'
             logger.error(HTTP_error)
             HTTP_error_previous = send_message_if_not_repeated(
-                bot, 
+                bot,
                 HTTP_error,
                 HTTP_error_previous
             )
@@ -187,7 +188,7 @@ def main():
             error_not_list = f'Сбой в программе: "{error}"'
             logger.error(error_not_list)
             error_not_list_previous = send_message_if_not_repeated(
-                bot, 
+                bot,
                 error_not_list,
                 error_not_list_previous
             )
@@ -197,7 +198,7 @@ def main():
             error_no_keys = f'Сбой в программе: "{error}"'
             logger.error(error_no_keys)
             error_no_keys_previous = send_message_if_not_repeated(
-                bot, 
+                bot,
                 error_no_keys,
                 error_no_keys_previous
             )
@@ -209,7 +210,7 @@ def main():
             )
             logger.error(error_status)
             error_status_previous = send_message_if_not_repeated(
-                bot, 
+                bot,
                 error_status,
                 error_status_previous
             )
@@ -222,7 +223,7 @@ def main():
             )
             logger.error(endpoint_message)
             endpoint_message_previous = send_message_if_not_repeated(
-                bot, 
+                bot,
                 endpoint_message,
                 endpoint_message_previous
             )
