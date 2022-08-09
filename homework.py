@@ -27,7 +27,6 @@ RETRY_TIME = 600
 ENDPOINT = 'https://practicum.yandex.ru/api/user_api/homework_statuses/'
 HEADERS = {'Authorization': f'OAuth {PRACTICUM_TOKEN}'}
 
-
 HOMEWORK_STATUSES = {
     'approved': 'Работа проверена: ревьюеру всё понравилось. Ура!',
     'reviewing': 'Работа взята на проверку ревьюером.',
@@ -132,6 +131,17 @@ def get_status_verdict(homeworks):
     return status_verdict
 
 
+def send_message_if_not_repeated(
+    bot, message, message_previous, debug_info=None
+):
+    """Отправка сообщения об ошибке в Telegram без повторов."""
+    if message != message_previous:
+        send_message(bot, message)
+        message_previous = message
+    elif debug_info is not None:
+        logger.debug(debug_info)
+    return message
+
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
@@ -154,37 +164,43 @@ def main():
             homeworks = check_response(response)
             status_verdict = get_status_verdict(homeworks)
 
-            if status_verdict != status_verdict_previous:
-                send_message(bot, status_verdict)
-                status_verdict_previous = status_verdict
-            else:
-                logger.debug('В ответе отсутствуют новые статусы.')
-
+            status_verdict_previous = send_message_if_not_repeated(
+                bot, 
+                status_verdict,
+                status_verdict_previous,
+                'В ответе отсутствуют новые статусы.'
+            )
             time.sleep(RETRY_TIME)
             current_timestamp = response['current_date']
 
         except My.HTTPstatusNot200 as error:
             HTTP_error = f'Сбой в програме: ответ API: "{error}".'
             logger.error(HTTP_error)
-            # if HTTP_error != HTTP_error_previous:
-            #     send_message(bot, HTTP_error)
-            #     HTTP_error_previous = HTTP_error
+            HTTP_error_previous = send_message_if_not_repeated(
+                bot, 
+                HTTP_error,
+                HTTP_error_previous
+            )
             time.sleep(RETRY_TIME)
 
         except My.HomeworksIsNotList as error:
             error_not_list = f'Сбой в программе: "{error}"'
             logger.error(error_not_list)
-            # if error_not_list != error_not_list_previous:
-            #     send_message(bot, error_not_list)
-            #     error_not_list_previous = error_not_list
+            error_not_list_previous = send_message_if_not_repeated(
+                bot, 
+                error_not_list,
+                error_not_list_previous
+            )
             time.sleep(RETRY_TIME)
 
         except My.NoKeysException as error:
             error_no_keys = f'Сбой в программе: "{error}"'
             logger.error(error_no_keys)
-            # if error_no_keys != error_no_keys_previous:
-            #     send_message(bot, error_no_keys)
-            #     error_no_keys_previous = error_no_keys
+            error_no_keys_previous = send_message_if_not_repeated(
+                bot, 
+                error_no_keys,
+                error_no_keys_previous
+            )
             time.sleep(RETRY_TIME)
 
         except My.NoStatusException as error:
@@ -192,9 +208,11 @@ def main():
                 f'Сбой в работе программы: "{error}"'
             )
             logger.error(error_status)
-            # if error_status != error_status_previous:
-            #     send_message(bot, error_status)
-            #     error_status_previous = error_status
+            error_status_previous = send_message_if_not_repeated(
+                bot, 
+                error_status,
+                error_status_previous
+            )
             time.sleep(RETRY_TIME)
 
         except Exception as error:
@@ -203,9 +221,11 @@ def main():
                 f'Ответ API: {error}'
             )
             logger.error(endpoint_message)
-            # if endpoint_message != endpoint_message_previous:
-            #     send_message(bot, endpoint_message)
-            #     endpoint_message_previous = endpoint_message
+            endpoint_message_previous = send_message_if_not_repeated(
+                bot, 
+                endpoint_message,
+                endpoint_message_previous
+            )
             time.sleep(RETRY_TIME)
 
 
