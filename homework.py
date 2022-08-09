@@ -90,7 +90,8 @@ def parse_status(homework):
     homework_status = homework['status']
     if homework_status in dict.keys(HOMEWORK_STATUSES):
         verdict = HOMEWORK_STATUSES[homework_status]
-        return (f'Изменился статус проверки '
+        return (
+            f'Изменился статус проверки '
             f'работы "{homework_name}". {verdict}'
         )
     else:
@@ -122,6 +123,14 @@ def check_tokens():
         return False
 
 
+def get_status_verdict(homeworks):
+    if homeworks == []:
+        status_verdict = 'Статус отсутствует.'
+    else:
+        status_verdict = parse_status(homeworks[0])
+    return status_verdict
+
+
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
@@ -138,15 +147,12 @@ def main():
     error_no_keys_previous = ''
     error_status_previous = ''
 
+
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
-
-            if homeworks == []:
-                status_verdict = 'Статус отсутствует.'
-            else:
-                status_verdict = parse_status(homeworks[0])
+            status_verdict = get_status_verdict(homeworks)
 
             if status_verdict != status_verdict_previous:
                 send_message(bot, status_verdict)
@@ -180,11 +186,11 @@ def main():
                 send_message(bot, error_no_keys)
                 error_no_keys_previous = error_no_keys
                 time.sleep(RETRY_TIME)
-                
+
         except My.NoStatusException as error:
             error_status = (
                 f'Сбой в работе программы: "{error}"'
-                )
+            )
             logger.error(error_status)
             if error_status != error_status_previous:
                 send_message(bot, error_status)
@@ -201,6 +207,7 @@ def main():
                 send_message(bot, endpoint_message)
                 endpoint_message_previous = endpoint_message
             time.sleep(RETRY_TIME)
+
 
 if __name__ == '__main__':
     main()
