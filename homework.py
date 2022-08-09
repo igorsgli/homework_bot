@@ -124,6 +124,7 @@ def check_tokens():
 
 
 def get_status_verdict(homeworks):
+    """Получить статус домашней работы."""
     if homeworks == []:
         status_verdict = 'Статус отсутствует.'
     else:
@@ -147,7 +148,6 @@ def main():
     error_no_keys_previous = ''
     error_status_previous = ''
 
-
     while True:
         try:
             response = get_api_answer(current_timestamp)
@@ -166,35 +166,35 @@ def main():
         except My.HTTPstatusNot200 as error:
             HTTP_error = f'Сбой в програме: ответ API: "{error}".'
             logger.error(HTTP_error)
-            if HTTP_error != HTTP_error_previous:
-                send_message(bot, HTTP_error)
-                HTTP_error_previous = HTTP_error
+            # if HTTP_error != HTTP_error_previous:
+            #     send_message(bot, HTTP_error)
+            #     HTTP_error_previous = HTTP_error
             time.sleep(RETRY_TIME)
 
         except My.HomeworksIsNotList as error:
             error_not_list = f'Сбой в программе: "{error}"'
             logger.error(error_not_list)
-            if error_not_list != error_not_list_previous:
-                send_message(bot, error_not_list)
-                error_not_list_previous = error_not_list
-                time.sleep(RETRY_TIME)
+            # if error_not_list != error_not_list_previous:
+            #     send_message(bot, error_not_list)
+            #     error_not_list_previous = error_not_list
+            time.sleep(RETRY_TIME)
 
         except My.NoKeysException as error:
             error_no_keys = f'Сбой в программе: "{error}"'
             logger.error(error_no_keys)
-            if error_no_keys != error_no_keys_previous:
-                send_message(bot, error_no_keys)
-                error_no_keys_previous = error_no_keys
-                time.sleep(RETRY_TIME)
+            # if error_no_keys != error_no_keys_previous:
+            #     send_message(bot, error_no_keys)
+            #     error_no_keys_previous = error_no_keys
+            time.sleep(RETRY_TIME)
 
         except My.NoStatusException as error:
             error_status = (
                 f'Сбой в работе программы: "{error}"'
             )
             logger.error(error_status)
-            if error_status != error_status_previous:
-                send_message(bot, error_status)
-                error_status_previous = error_status
+            # if error_status != error_status_previous:
+            #     send_message(bot, error_status)
+            #     error_status_previous = error_status
             time.sleep(RETRY_TIME)
 
         except Exception as error:
@@ -203,9 +203,9 @@ def main():
                 f'Ответ API: {error}'
             )
             logger.error(endpoint_message)
-            if endpoint_message != endpoint_message_previous:
-                send_message(bot, endpoint_message)
-                endpoint_message_previous = endpoint_message
+            # if endpoint_message != endpoint_message_previous:
+            #     send_message(bot, endpoint_message)
+            #     endpoint_message_previous = endpoint_message
             time.sleep(RETRY_TIME)
 
 
