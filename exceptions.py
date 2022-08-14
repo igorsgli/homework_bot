@@ -1,33 +1,28 @@
-class My(object):
-    """Собственные исключения."""
+class NoToken(Exception):
+    """Отсутствие обязательных переменных
+    окружения во время запуска бота.
+    """
 
-    class NoTokenException(Exception):
-        """Отсутствие обязательных переменных
-        окружения во время запуска бота.
-        """
+    pass
 
-        pass
+class HTTPstatusNot200(Exception):
+    """Код ответа API не равен 200."""
 
-    class HTTPstatusNot200(Exception):
-        """Код ответа API не равен 200."""
+    pass
 
-        pass
+class APINotAvailable(Exception):
+    """API недоступен."""
 
-    class NoKeysException(Exception):
-        """Отсутствие ожидаемых ключей
-        в ответе API.
-        """
+    pass
 
-        pass
+class EmptyResponseFromAPI(Exception):
+    """Домашней работы нет в ответе."""
 
-    class HomeworksIsNotList(Exception):
-        """Формат полученных данных по домашним работам
-        по ключу 'homeworks' не список.
-        """
+    pass
 
-        pass
+class HomeworksIsNotList(Exception):
+    """Формат полученных данных по домашним работам
+    по ключу 'homeworks' не список.
+    """
 
-    class NoStatusException(Exception):
-        """Статус домашней работы не задокументирован."""
-
-        pass
+    pass
