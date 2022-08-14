@@ -116,11 +116,12 @@ def parse_status(homework):
     if homework_status not in HOMEWORK_VERDICTS:
         raise KeyError(
             'Неожиданный статус домашней работы.'
-        )        
+        )
     else:
         logger.info('Статус домашней работы извлечен.')
         return (
-            f'Изменился статус проверки работы "{homework_name}". {HOMEWORK_VERDICTS[homework_status]}'
+            f'Изменился статус проверки работы "{homework_name}". '
+            f'{HOMEWORK_VERDICTS[homework_status]}'
         )
 
 
@@ -138,7 +139,7 @@ def check_tokens():
                 f'Отсутствует обязательная переменная '
                 f'окружения: "{name}". '
                 f'Программа принудительно остановлена.'
-             )
+            )
     return is_tokens_available
 
 
