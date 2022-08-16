@@ -1,8 +1,8 @@
+from unicodedata import name
 import exceptions
 import logging
 import os
 import requests
-import sys
 import telegram
 import time
 
@@ -13,10 +13,10 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-handler = logging.StreamHandler(sys.stdout)
+handler = logging.FileHandler('x.log')
 logger.addHandler(handler)
 formatter = logging.Formatter(
-    '%(asctime)s - %(levelname)s - %(message)s'
+    '%(asctime)s - %(levelname)s - %(message)s - %(lineno)d'
 )
 handler.setFormatter(formatter)
 
@@ -64,11 +64,7 @@ def get_api_answer(current_timestamp):
             f'Начинаем запрос к API: '
             f'{"{url}, {headers}, {params}".format(**request_args)}'
         )
-        homework_statuses = requests.get(
-            ENDPOINT,
-            headers=HEADERS,
-            params=params
-        )
+        homework_statuses = requests.get(**request_args)
         if homework_statuses.status_code != HTTPStatus.OK:
             raise exceptions.HTTPstatusNot200(
                 f'API возвращает код, отличный от 200. '
@@ -78,8 +74,8 @@ def get_api_answer(current_timestamp):
             )
         logger.info('Ответ от API пришел.')
         return homework_statuses.json()
-    except ConnectionError as error:
-        raise exceptions.APINotAvailable(
+    except Exception as error:
+        raise ConnectionError(
             f'Сбой в програме при запросе API: "{error}". '
             f'Запрос к API: '
             f'{"{url}, {headers}, {params}".format(**request_args)}. '
@@ -94,29 +90,32 @@ def check_response(response):
         raise TypeError(
             'Возвращаемый ответ не словарь.'
         )
-    if response.get('homeworks') == []:
+    if 'homeworks' not in response:
         raise exceptions.EmptyResponseFromAPI(
             'Домашней работы нет в ответе.'
         )
     homeworks = response.get('homeworks')
-    if isinstance(homeworks, list):
-        logger.info('Ответ API проверен.')
-        return homeworks
-    else:
+    if not isinstance(homeworks, list):
         raise exceptions.HomeworksIsNotList(
             'Возвращаемая домашняя работа не список.'
         )
+    logger.info('Ответ API проверен.')
+    return homeworks
 
 
 def parse_status(homework):
     """Извлекает статус домашней работы."""
     logger.info('Начало извлечения статуса домашней работы.')
-    homework_name = homework.get('homework_name')
-    homework_status = homework.get('status')
-    if homework_status not in HOMEWORK_VERDICTS:
-        raise KeyError(
-            'Неожиданный статус домашней работы.'
-        )
+    try:
+        homework_name = homework.get('homework_name')
+        homework_status = homework.get('status')
+    except Exception as error:
+        for key in ['homework_name', 'status']:
+            if key not in homework:
+                raise KeyError(
+                    f'Ключ "{key}" отсутствует в домашней работе.'
+                )
+        raise ValueError(error)
     else:
         logger.info('Статус домашней работы извлечен.')
         return (
@@ -151,18 +150,26 @@ def main():
         )
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
-    current_report = {'verdict': '', 'error': ''}
-    prev_report = current_report.copy()
+    key = 'records'
+    current_report = {key: ['', '']}
+    prev_report = {key: ['', '']}
 
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
-            current_report['verdict'] = parse_status(homeworks[0])
-            if current_report['verdict'] != prev_report['verdict']:
-                send_message(bot, current_report['verdict'])
+
+            if homeworks != []:
+                current_report[key][0] = parse_status(homeworks[0])
+                print('current report: ', current_report)
+                print('previous report: ', prev_report)
+            else:
+                current_report[key][0] = 'Нет новых статусов.'
+
+            if current_report[key][0] != prev_report[key][0]:
+                send_message(bot, current_report[key][0])
                 prev_report = current_report.copy()
-                current_timestamp = response['current_date']
+                current_timestamp = response.get('current_date', current_timestamp)
             else:
                 logger.info('Новые статусы отсутствуют.')
 
@@ -171,9 +178,9 @@ def main():
 
         except Exception as error:
             logger.error(error)
-            current_report['error'] = error
-            if current_report['error'] != prev_report['error']:
-                send_message(bot, current_report['error'])
+            current_report[key][1] = error
+            if current_report[key][1] != prev_report[key][1]:
+                send_message(bot, current_report[key][1])
                 prev_report = current_report.copy()
 
         finally:
