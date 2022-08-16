@@ -1,4 +1,3 @@
-from unicodedata import name
 import exceptions
 import logging
 import os
@@ -161,15 +160,15 @@ def main():
 
             if homeworks != []:
                 current_report[key][0] = parse_status(homeworks[0])
-                print('current report: ', current_report)
-                print('previous report: ', prev_report)
             else:
                 current_report[key][0] = 'Нет новых статусов.'
 
             if current_report[key][0] != prev_report[key][0]:
                 send_message(bot, current_report[key][0])
                 prev_report = current_report.copy()
-                current_timestamp = response.get('current_date', current_timestamp)
+                current_timestamp = response.get(
+                    'current_date', current_timestamp
+                )
             else:
                 logger.info('Новые статусы отсутствуют.')
 
