@@ -12,7 +12,7 @@ load_dotenv()
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-handler = logging.FileHandler('x.log')
+handler = logging.FileHandler('x.log', encoding='utf-8')
 logger.addHandler(handler)
 formatter = logging.Formatter(
     '%(asctime)s - %(levelname)s - %(message)s - %(lineno)d'
@@ -105,22 +105,21 @@ def check_response(response):
 def parse_status(homework):
     """Извлекает статус домашней работы."""
     logger.info('Начало извлечения статуса домашней работы.')
-    try:
-        homework_name = homework.get('homework_name')
-        homework_status = homework.get('status')
-    except Exception as error:
-        for key in ['homework_name', 'status']:
-            if key not in homework:
-                raise KeyError(
-                    f'Ключ "{key}" отсутствует в домашней работе.'
-                )
-        raise ValueError(error)
-    else:
-        logger.info('Статус домашней работы извлечен.')
-        return (
-            f'Изменился статус проверки работы "{homework_name}". '
-            f'{HOMEWORK_VERDICTS[homework_status]}'
+    if 'homework_name' not in homework:
+        raise KeyError(
+        'Ключ "homework_name" отсутствует в домашней работе.'
         )
+    homework_name = homework.get('homework_name')
+    homework_status = homework.get('status')
+    if homework_status not in HOMEWORK_VERDICTS:
+        raise KeyError(
+        'Неожиданный статус домашней работы.'
+        )
+    logger.info('Статус домашней работы извлечен.')
+    return (
+        f'Изменился статус проверки работы "{homework_name}". '
+        f'{HOMEWORK_VERDICTS[homework_status]}'
+    )
 
 
 def check_tokens():
@@ -149,22 +148,22 @@ def main():
         )
     bot = telegram.Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
-    key = 'records'
-    current_report = {key: ['', '']}
-    prev_report = {key: ['', '']}
+    current_report = {'name': '', 'output': ''}
+    prev_report = {'name': '', 'output': ''}
 
     while True:
         try:
             response = get_api_answer(current_timestamp)
             homeworks = check_response(response)
 
-            if homeworks != []:
-                current_report[key][0] = parse_status(homeworks[0])
+            if homeworks:
+                current_report['output'] = parse_status(homeworks[0])
+                current_report['name'] = homeworks[0]['homework_name']
             else:
-                current_report[key][0] = 'Нет новых статусов.'
+                current_report['output'] = 'Нет новых статусов.'
 
-            if current_report[key][0] != prev_report[key][0]:
-                send_message(bot, current_report[key][0])
+            if current_report != prev_report:
+                send_message(bot, current_report['output'])
                 prev_report = current_report.copy()
                 current_timestamp = response.get(
                     'current_date', current_timestamp
@@ -177,9 +176,9 @@ def main():
 
         except Exception as error:
             logger.error(error)
-            current_report[key][1] = error
-            if current_report[key][1] != prev_report[key][1]:
-                send_message(bot, current_report[key][1])
+            current_report['output'] = error
+            if current_report != prev_report:
+                send_message(bot, current_report['output'])
                 prev_report = current_report.copy()
 
         finally:
