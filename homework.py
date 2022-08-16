@@ -107,13 +107,13 @@ def parse_status(homework):
     logger.info('Начало извлечения статуса домашней работы.')
     if 'homework_name' not in homework:
         raise KeyError(
-        'Ключ "homework_name" отсутствует в домашней работе.'
+            'Ключ "homework_name" отсутствует в домашней работе.'
         )
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
     if homework_status not in HOMEWORK_VERDICTS:
         raise KeyError(
-        'Неожиданный статус домашней работы.'
+            'Неожиданный статус домашней работы.'
         )
     logger.info('Статус домашней работы извлечен.')
     return (
